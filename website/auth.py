@@ -39,7 +39,8 @@ def logout():
 def sign_up():
     if request.method == 'POST':
         email = request.form.get('email')
-        first_name = request.form.get('firstName')
+        name = request.form.get('name')
+        phone_number = request.form.get('phone_number')
         password1 = request.form.get('password1')
         password2 = request.form.get('password2')
 
@@ -48,19 +49,20 @@ def sign_up():
             flash('Email already exists.', category='error')
         elif len(email) < 4:
             flash('Email must be greater than 3 characters.', category='error')
-        elif len(first_name) < 2:
+        elif len(name) < 2:
             flash('First name must be greater than 1 character.', category='error')
         elif password1 != password2:
             flash('Passwords don\'t match.', category='error')
         elif len(password1) < 7:
             flash('Password must be at least 7 characters.', category='error')
         else:
-            new_user = User(email=email, first_name=first_name, password=generate_password_hash(
-                password1, method='sha256'))
+            new_user = User(email=email, first_name= name  ,  password=generate_password_hash(
+                password1, method='sha256') )
             db.session.add(new_user)
             db.session.commit()
             login_user(new_user, remember=True)
             flash('Account created!', category='success')
+            generate_account_no(current_user)
             return redirect(url_for('views.user_home'))
 
     return render_template("sign_up.html", user=current_user)
@@ -87,10 +89,6 @@ def conductor_login():
     return render_template("conductor_login.html", user = current_user)
 
 
-
-
-
-
     
 @auth.route('/admin-login', methods=['GET', 'POST'])
 def admin_login():
@@ -110,3 +108,12 @@ def admin_login():
             flash('Email does not exist.', category='error')
     
     return render_template("admin_login.html", user = current_user)
+
+
+
+
+
+def generate_account_no(current_user):
+    print("hiiii")
+    print(current_user.id)
+

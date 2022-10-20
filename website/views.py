@@ -17,8 +17,12 @@ def home():
 @views.route('/user-home', methods=['GET', 'POST'])
 @login_required
 def user_home():
-    name = current_user.first_name
-    return render_template("user_home.html" , user = current_user, name = name)
+    name = current_user.first_name 
+    phone_number = current_user.email
+    data = dict()
+    data["name"] = name 
+    data["phone_number"] = phone_number
+    return render_template("user_home.html" , user = current_user, data = data )
 
 
 @views.route('/user-enquire-route', methods=['GET', 'POST'])
