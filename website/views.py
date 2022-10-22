@@ -17,11 +17,11 @@ def home():
 @views.route('/user-home', methods=['GET', 'POST'])
 @login_required
 def user_home():
-    name = current_user.first_name 
-    phone_number = current_user.email
     data = dict()
-    data["name"] = name 
-    data["phone_number"] = phone_number
+    data["name"] = current_user.first_name 
+    data["phone_number"] = current_user.phone_number
+    data["account_number"] = current_user.account_number
+    data["account_type"] = current_user.type
     return render_template("user_home.html" , user = current_user, data = data )
 
 

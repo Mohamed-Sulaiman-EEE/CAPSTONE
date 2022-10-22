@@ -15,6 +15,11 @@ def login():
         password = request.form.get('password')
 
         user = User.query.filter_by(email=email).first()
+        type = user.type
+        if type != "U":
+            flash("You dont belong here")
+            return render_template("login.html", user = current_user)
+
         if user:
             if check_password_hash(user.password, password):
                 flash('Logged in successfully!', category='success')
@@ -53,16 +58,16 @@ def sign_up():
             flash('First name must be greater than 1 character.', category='error')
         elif password1 != password2:
             flash('Passwords don\'t match.', category='error')
-        elif len(password1) < 7:
+        elif len(password1) < 2:
             flash('Password must be at least 7 characters.', category='error')
         else:
-            new_user = User(email=email, first_name= name  ,  password=generate_password_hash(
+            new_user = User(email=email, first_name= name ,phone_number= phone_number ,  password=generate_password_hash(
                 password1, method='sha256') )
             db.session.add(new_user)
             db.session.commit()
             login_user(new_user, remember=True)
             flash('Account created!', category='success')
-            generate_account_no(current_user)
+            generate_account_details(current_user)
             return redirect(url_for('views.user_home'))
 
     return render_template("sign_up.html", user=current_user)
@@ -76,6 +81,10 @@ def conductor_login():
         password = request.form.get('password')
 
         user = User.query.filter_by(email=email).first()
+        type = user.type
+        if type != "C":
+            flash("You dont belong here")
+            return render_template("login.html", user = current_user)
         if user:
             if check_password_hash(user.password, password):
                 flash('Logged in successfully!', category='success')
@@ -97,6 +106,10 @@ def admin_login():
         password = request.form.get('password')
 
         user = User.query.filter_by(email=email).first()
+        type = user.type
+        if type != "A":
+            flash("You dont belong here")
+            return render_template("login.html", user = current_user)
         if user:
             if check_password_hash(user.password, password):
                 flash('Logged in successfully!', category='success')
@@ -113,7 +126,13 @@ def admin_login():
 
 
 
-def generate_account_no(current_user):
-    print("hiiii")
-    print(current_user.id)
+def generate_account_details(current_user):
+    l = 5-len(str(current_user.id))
+    flash(l)
+    prefix = "0"*l + str(current_user.id)
+    no = "AAAAA" + prefix
+    current_user.account_number = no
+    current_user.type = "U"
+    db.session.commit()
+    flash(current_user.account_number)
 

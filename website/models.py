@@ -15,6 +15,9 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(150), unique=True)
     password = db.Column(db.String(150))
     first_name = db.Column(db.String(150))
+    phone_number = db.Column(db.String(10))
+    type = db.Column(db.String(1))
+    account_number = db.Column(db.String(10))
     notes = db.relationship('Note')
 
 class Conductor(db.Model, UserMixin):
