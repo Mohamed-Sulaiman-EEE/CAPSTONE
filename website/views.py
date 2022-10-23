@@ -2,7 +2,7 @@ from multiprocessing.sharedctypes import Value
 from unicodedata import name
 from flask import Blueprint, render_template, request, flash, jsonify
 from flask_login import login_required, current_user
-from .models import  User , Conductor_details , Route, Scratch_card , Site_settings , Helpdesk_recharge
+from .models import  User , Conductor_details , Route, Scratch_card , Site_settings , Helpdesk_recharge, Trip
 from . import db
 import json , requests , random , datetime
 
@@ -19,7 +19,6 @@ def home():
 @views.route('/user-home', methods=['GET', 'POST'])
 @login_required
 def user_home():
-    
     return render_template("user_home.html" , user = current_user)
 
 
@@ -67,21 +66,39 @@ def user_wallet():
 @views.route('/conductor-home', methods=['GET', 'POST'])
 @login_required
 def conductor_home():
-    data = current_user.conductors
-    data = data[0]
-    
-    
-    return render_template("conductor_home.html" , user = current_user, data=data )
+    route = Route.query.all()
+    return render_template("conductor_home.html" , user = current_user,route=route)
+
+@views.route('/conductor-current-trip', methods=['GET', 'POST'])
+@login_required
+def conductor_current_trip ():
+    return render_template("conductor_current_trip.html" , user = current_user)
+
+@views.route('/conductor-my-trips', methods=['GET', 'POST'])
+@login_required
+def conductor_my_trips():
+    trips = Trip.query.filter_by(conductor_id = current_user.id).all()
+    return render_template("conductor_my_trips.html" , user = current_user , trips = trips )
+
+@views.route('/conductor-view-tickets/<trip_id>', methods=['GET', 'POST'])
+@login_required
+def conductor_view_tickets (trip_id):
+    flash(trip_id)
+    trip = Trip.query.filter_by(trip_id=trip_id).first()
+    return render_template("conductor_view_tickets.html" , user = current_user, trip_id = trip_id, trip=trip )
+
+
+
 
 #...................................ADMI FUNCTIONS.................................................
 
 @views.route('/admin-home', methods=['GET', 'POST'])
 @login_required
 def admin_home():
+    return render_template("admin_home.html" , user = current_user )
 
-    route = Route.query.all()
-    return render_template("admin_home.html" , user = current_user , data=route)
 #....................................................................................
+
 @views.route('/admin-manage-routes', methods=['GET', 'POST'])
 @login_required
 def admin_manage_routes():
@@ -101,9 +118,8 @@ def admin_manage_routes():
 @views.route('/admin-wallet-recharge', methods=['GET', 'POST'])
 @login_required
 def admin_wallet_recharge():
-    route = Route.query.all()
-    ss= Site_settings.query.all()
-    scr = ss[0]
+    ss= Site_settings.query.first()
+    scr = ss
     if request.method== "POST":
         no = request.form.get('no') 
         value = request.form.get('value')

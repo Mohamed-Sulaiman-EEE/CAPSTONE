@@ -1,5 +1,7 @@
 from multiprocessing.sharedctypes import Value
 from tkinter.tix import INTEGER
+
+#from website.views import conductor_home
 from . import db
 from flask_login import UserMixin
 from sqlalchemy.sql import func
@@ -17,10 +19,11 @@ class User(db.Model, UserMixin):
     conductors = db.relationship('Conductor_details')
     scratch_cards = db.relationship('Scratch_card')
     helpdesk_recharges = db.relationship('Helpdesk_recharge')
+    trips = db.relationship('Trip')
+
 
 class Conductor_details(db.Model, UserMixin):
-    id = db.Column(db.Integer , primary_key = True)
-    conductor_id = db.Column(db.Integer , db.ForeignKey('user.id'))
+    conductor_id = db.Column(db.Integer , db.ForeignKey('user.id'),primary_key = True)
     bus = db.Column(db.String(10))
 
 class Route(db.Model):
@@ -47,3 +50,15 @@ class Helpdesk_recharge(db.Model,UserMixin):
     value = db.Column(db.Integer)
     date = db.Column(db.String(100))
     account_number = db.Column(db.String(10) , db.ForeignKey('user.account_number'))
+
+
+class Trip(db.Model,UserMixin):
+    trip_id = db.Column(db.Integer , primary_key = True)
+    route_id = db.Column(db.String(100))
+    conductor_id = db.Column(db.Integer , db.ForeignKey('user.id'))
+    date = db.Column(db.String(100))
+    collection = db.Column(db.Integer)
+    ticket_run = db.Column(db.Integer)
+    start_time =db.Column(db.String(100))
+    end_time = db.Column(db.String(100))
+    status =db.Column(db.String(1))

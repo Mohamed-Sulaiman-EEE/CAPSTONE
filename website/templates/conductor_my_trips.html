@@ -1,0 +1,44 @@
+{% extends "base.html" %} 
+{% block title %} Conductor My Trips {% endblock %} 
+
+{% block content %}
+<div>
+    <h1 align = "center">My Trips </h1>
+    <!-- DETAILS-->
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col" ><b>TRIP ID</b></th>
+        <th scope="col"><b>ROUTE ID</b></th>
+        <th scope="col"><b>DATE</b></th>
+        <th scope="col"><b>START TIME</b></th>
+        <th scope="col"><b>END TIME</b></th>
+        <th scope="col"><b>COLLECTION</b></th>
+        <th scope="col"><b>TOTAL TICKETS</b></th>
+        <th scope="col"><b>VIEW TICKETS</b></th>
+      </tr>
+    </thead>
+       
+    <tbody>
+      {%for t in trips %}
+      <tr>
+        <th>{{t.trip_id}}</th>
+        <td>{{t.route_id}}</td>
+        <td>{{t.date}}</td>
+        <td>{{t.start_time}}</td>
+        <td>{{t.end_time}}</td>
+        <td>{{t.collection}}</td>
+        <td>{{t.ticket_run}}</td>
+        <td><a class="btn btn-primary " href="/conductor-view-tickets/{{t.trip_id}} " role="button"  >VIEW TICKETS</a></td>
+      </tr>
+      {%endfor%}
+    </tbody>
+  </table>
+
+</div>
+
+
+{%for t in trips%}
+
+{%endfor%}
+{% endblock %}

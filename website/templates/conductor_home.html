@@ -2,9 +2,6 @@
 {% block title %} Conductor Home {% endblock %} 
 
 {% block content %}
-
-
-
 <!-- DETAILS-->
 <div>
 <table class="table table-striped">
@@ -35,12 +32,9 @@
   </tbody>
 </table>
 </div>
-  Name : {{user.first_name}}
-  {% for conductor_detail  in user.conductors %}
-  {{conductor_detail.bus}}
-  {% endfor %}
-  <br>
-  {{data.bus}}
-  {{data.id}}
-  {{user.name}}
+<hr><br>
+
+{%for r in route%}
+{{r.route_id}}
+{%endfor%}
 {% endblock %}
