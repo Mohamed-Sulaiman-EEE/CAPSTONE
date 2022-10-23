@@ -5,7 +5,7 @@
 
 <!-- QR CODE -->
 <div align = "center">
-<img src="{{ url_for('static', filename='bus.jpg') }}" class="img-fluid" alt="Responsive image" >
+<img src="{{ url_for('static', filename='/images/{0}.png'.format(user.account_number)) }}" class="img-fluid" alt="Responsive image" >
 </div>
 <!-- DETAILS-->
 <div>

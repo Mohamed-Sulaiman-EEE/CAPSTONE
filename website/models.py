@@ -5,13 +5,6 @@ from flask_login import UserMixin
 from sqlalchemy.sql import func
 
 
-class Note(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    data = db.Column(db.String(10000))
-    date = db.Column(db.DateTime(timezone=True), default=func.now())
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True)
@@ -23,6 +16,7 @@ class User(db.Model, UserMixin):
     balance = db.Column(db.Integer)
     conductors = db.relationship('Conductor_details')
     scratch_cards = db.relationship('Scratch_card')
+    helpdesk_recharges = db.relationship('Helpdesk_recharge')
 
 class Conductor_details(db.Model, UserMixin):
     id = db.Column(db.Integer , primary_key = True)
@@ -42,7 +36,14 @@ class Scratch_card(db.Model,UserMixin):
     value = db.Column(db.Integer)
     status = db.Column(db.String(1))
     user_id = db.Column(db.Integer , db.ForeignKey('user.id'))
+    date = db.Column(db.String(10))
     
 class Site_settings(db.Model):
     id = db.Column(db.Integer , primary_key = True)
     scratch_card_run = db.Column(db.Integer)
+
+class Helpdesk_recharge(db.Model,UserMixin):
+    id = db.Column(db.Integer , primary_key = True)
+    value = db.Column(db.Integer)
+    date = db.Column(db.String(100))
+    account_number = db.Column(db.String(10) , db.ForeignKey('user.account_number'))

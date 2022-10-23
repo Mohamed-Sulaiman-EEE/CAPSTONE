@@ -31,9 +31,64 @@
     />
   </div>
   <br />
-  <button type="submit" class="btn btn-primary">Recharge</button>
+  <button type="submit" class="btn btn-primary btn-success">Scratch Card</button>
 </form>
 <hr>
 
-<h3 align="center">Recharge History</h3>
+<hr>
+<div>
+  <a class="btn btn-primary btn-lg " href="#" role="button">Recharge Online</a><br>
+  <hr>
+</div>
+<div>
+<h3 align="center">Scratch Card Recharge History</h3>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col" ><b>#</b></th>
+      <th scope="col"><b>CARD NUMBER</b></th>
+      <th scope="col"><b>SECURITY HASH</b></th>
+      <th scope="col"><b>VALUE</b></th>
+      <th scope="col"><b>DATE & TIME</b></th>
+    </tr>
+  </thead>
+     
+  <tbody>
+    {%for h in history%}
+    <tr>
+      <th>{{h.id}}</th>
+      <th>{{h.card_number}}</th>
+      <td>{{h.security_hash}}</td>
+      <td>{{h.value}}</td>
+      <td>{{h.date}}</td>
+    </tr>
+    {%endfor%}
+  </tbody>
+</table>
+
+</div>
+<hr><br>
+<div>
+  <h3 align="center">HelpDesk Recharge History</h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col" ><b>#</b></th>
+        <th scope="col"><b>VALUE</b></th>
+        <th scope="col"><b>DATE & TIME</b></th>
+      </tr>
+    </thead>
+       
+    <tbody>
+      {%for h in help%}
+      <tr>
+        <th>{{h.id}}</th>
+        <td>{{h.value}}</td>
+        <td>{{h.date}}</td>
+      </tr>
+      {%endfor%}
+    </tbody>
+  </table>
+  
+  </div>
 {% endblock %}

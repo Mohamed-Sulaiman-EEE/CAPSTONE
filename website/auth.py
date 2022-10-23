@@ -1,10 +1,11 @@
+from fileinput import filename
 from importlib.metadata import metadata
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from .models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 from flask_login import login_user, login_required, logout_user, current_user
-
+import qrcode 
 
 auth = Blueprint('auth', __name__)
 
@@ -130,5 +131,8 @@ def generate_account_details(current_user):
     current_user.account_number = no
     current_user.type = "U"
     db.session.commit()
+    data = no
+    image = qrcode.make(data=data)
+    image.save( "./website/static/images/{0}.png".format(current_user.account_number))
     
 

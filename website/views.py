@@ -2,9 +2,10 @@ from multiprocessing.sharedctypes import Value
 from unicodedata import name
 from flask import Blueprint, render_template, request, flash, jsonify
 from flask_login import login_required, current_user
-from .models import Note, User , Conductor_details , Route, Scratch_card , Site_settings
+from .models import  User , Conductor_details , Route, Scratch_card , Site_settings , Helpdesk_recharge
 from . import db
-import json , requests , random
+import json , requests , random , datetime
+
 # END OF IMPORTS
 views = Blueprint('views', __name__)
 #....................................................................................
@@ -47,12 +48,19 @@ def user_wallet():
         if card.status == "U":
             flash("Card has already been used !!!" , category="error")
             return render_template("user_wallet.html", user = current_user)
+        elif card.security_has != security_hash:
+            flash("Wrong security hash !!!",category="error")
         card.status = "U"
         card.user_id = current_user.id
+        date = datetime.datetime.now()
+        date = str(date.strftime("%c"))
+        card.date = date
         current_user.balance += card.value
         db.session.commit()
         flash("{0} Rupess recharged  successfully !!!".format(card.value) , category="success")
-    return render_template("user_wallet.html" , user = current_user)
+    history = current_user.scratch_cards
+    help = current_user.helpdesk_recharges
+    return render_template("user_wallet.html" , user = current_user , history=history , help = help )
 
 #.................................CONDUCTOR FUNCTIONS .............................................
 
@@ -93,22 +101,43 @@ def admin_manage_routes():
 @views.route('/admin-wallet-recharge', methods=['GET', 'POST'])
 @login_required
 def admin_wallet_recharge():
-    if request.method== "POST":
-        sc= Site_settings.query.all()
-        scr = sc[0].scratch_card_run
-        no = int(request.form.get('no')) 
-        value = int(request.form.get('value'))
-        for i in range(1, no+1):
-            card_num = scr + i
-            security_hash =random.randint(10000 , 99999)
-            card = Scratch_card(card_number = card_num , security_hash=security_hash , value = value , status = "N" ,user_id = current_user.id)
-            db.session.add(card)
-            db.session.commit()
-            if i == no:
-                sc[0].scratch_card_run = i + scr  
-                db.session.commit()
-        flash("Cards generated successfully !!!")
     route = Route.query.all()
-    sc= Site_settings.query.all()
-    scr = sc[0]
-    return render_template("admin_wallet_recharge.html" , user = current_user , data=route, scr = scr)
+    ss= Site_settings.query.all()
+    scr = ss[0]
+    if request.method== "POST":
+        no = request.form.get('no') 
+        value = request.form.get('value')
+        account_number = request.form.get('account_number')
+        val = request.form.get('val')
+        if account_number and val :
+            flash("Recharged successfully ")
+            val = int(val)
+            user = User.query.filter_by(account_number=account_number).first()
+            date = datetime.datetime.now()
+            date = str(date.strftime("%c"))
+            help = Helpdesk_recharge(account_number = user.account_number , value = val , date = date)
+            user.balance = user.balance + val
+            db.session.add(help)
+            db.session.commit()
+            passenger = user
+
+            return render_template("admin_wallet_recharge.html" , user = current_user , scr = scr,passenger=passenger)
+
+        if no and value :
+            no = int(no)
+            value= int(value)
+            ss= Site_settings.query.all()
+            scr = ss[0].scratch_card_run
+            
+            for i in range(1, no+1):
+                card_num = scr + i
+                security_hash =random.randint(10000 , 99999)
+                card = Scratch_card(card_number = card_num , security_hash=security_hash , value = value , status = "N" ,user_id = current_user.id)
+                db.session.add(card)
+                db.session.commit()
+                if i == no:
+                    ss[0].scratch_card_run = i + scr  
+                    db.session.commit()
+            flash("Cards generated successfully !!!")
+    
+    return render_template("admin_wallet_recharge.html" , user = current_user , scr = scr)
