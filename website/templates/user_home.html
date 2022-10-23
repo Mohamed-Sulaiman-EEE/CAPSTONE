@@ -3,37 +3,46 @@
 
 {% block content %}
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-toggle="collapse"
-      data-target="#navbar"
-    >
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbar">
-      <div class="navbar-nav">
-        <a class="nav-item nav-link" id="home" href="/user-home">Home</a>
-        <a class="nav-item nav-link" id="home" href="/user-enquire-route">Route Enquire</a>
-        <a class="nav-item nav-link" id="home" href="/user-travel-history">Tarvel History</a>
-        <a class="nav-item nav-link" id="home" href="/user-wallet">Wallet</a>
-        <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
-      </div>
-    </div>
-</nav>
+<!-- QR CODE -->
+<div align = "center">
+<img src="{{ url_for('static', filename='bus.jpg') }}" class="img-fluid" alt="Responsive image" >
+</div>
+<!-- DETAILS-->
 <div>
-Name : {{data["name"]}} 
-<br>
-Phone No :{{data["phone_number"]}} 
-<br>
-Account Number : {{data["account_number"]}}
-<br>
-Account Type : {{data["account_type"]}}
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col" ><b>Particulars</b></th>
+        <th scope="col"><b>Details</b></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Name</th>
+        <td>{{user.name}}</td>
+      </tr>
+      <tr>
+        <th scope="row">Account Number</th>
+        <td>{{user.account_number}}</td>
+      </tr>
+      <tr>
+        <th scope="row">Phone Number</th>
+        <td>{{user.phone_number}}</td>
+      </tr>
+      <tr>
+        <th scope="row">Account Type</th>
+        <td>{{user.type}}</td>
+      </tr>
+      <tr>
+        <th scope="row">Account Balance</th>
+        <td>{{user.balance}}</td>
+      </tr>
+      
+    </tbody>
+  </table>
+  </div>
 
-</div>
 
-</div>
 
 
 {% endblock %}

@@ -19,33 +19,74 @@
   </head>
   <body>
 
-<!--
+{%if user.is_authenticated %}
+  {%if user.type == "U"%}
+    <!-- NAVIGATION BAR-->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbar"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbar">
-        <div class="navbar-nav">
-          
-          {% if user.is_authenticated %}
-          <a class="nav-item nav-link" id="home" href="/">Home</a>
-          <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
-          {% else %}
-          <a class="nav-item nav-link" id="login" href="/login">Login</a>
-          <a class="nav-item nav-link" id="signUp" href="/sign-up">Sign Up</a>
-          {% endif %}
-        </div>
-      </div>
+  <button
+    class="navbar-toggler"
+    type="button"
+    data-toggle="collapse"
+    data-target="#navbar"
+  >
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbar">
+    <div class="navbar-nav">
+      <a class="nav-item nav-link" id="home" href="/user-home">Home</a>
+      <a class="nav-item nav-link" id="home" href="/user-enquire-route">Route Enquire</a>
+      <a class="nav-item nav-link" id="home" href="/user-travel-history">Travel History</a>
+      <a class="nav-item nav-link" id="home" href="/user-wallet">Wallet</a>
+      <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
+    </div>
+  </div>
     </nav>
-  !-->
-
-
-
+  {%endif%}
+  {%if user.type == "C"%}
+    <!-- NAVIGATION BAR-->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <button
+    class="navbar-toggler"
+    type="button"
+    data-toggle="collapse"
+    data-target="#navbar"
+  >
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbar">
+    <div class="navbar-nav">
+      <a class="nav-item nav-link" id="home" href="/conductor-home">Home</a>
+      <a class="nav-item nav-link" id="home" href="/conductor-home">Trip</a>
+      <a class="nav-item nav-link" id="home" href="/conductor-home">My Trips</a>
+      <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
+    </div>
+  </div>
+    </nav>
+  {%endif%}
+  {%if user.type == "A"%}
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbar"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbar">
+      <div class="navbar-nav">
+        <a class="nav-item nav-link" id="home" href="/admin-home">Home</a>
+        <a class="nav-item nav-link" id="home" href="/admin-manage-routes">Manage Routes</a>
+        <a class="nav-item nav-link" id="home" href="/conductor-manage-trips">Manage Conductors </a>
+        <a class="nav-item nav-link" id="home" href="/admin-wallet-recharge">Wallet Recharge</a>
+        <a class="nav-item nav-link" id="home" href="/conductor-manage-trips">Financial Stats</a>
+        <a class="nav-item nav-link" id="home" href="/conductor-manage-trips">Dynamic Fleet management</a>
+        <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
+      </div>
+    </div>
+  </nav>
+  {%endif%}
+{%endif%}
 
     {% with messages = get_flashed_messages(with_categories=true) %} {% if
     messages %} {% for category, message in messages %} {% if category ==

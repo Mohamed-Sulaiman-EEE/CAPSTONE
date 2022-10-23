@@ -1,9 +1,19 @@
 {% extends "base.html" %}
 {% block title %} HOME {% endblock %} 
 {% block content%}
+<div align = "center">
+<img src="{{ url_for('static', filename='bus.jpg') }}" class="img-fluid" alt="Responsive image" >
+</div>
+<div text-align = "center" >
+<h1 align = "center">Home Page</h1>
+</div>
 
-<button><b><a href = "/login">USER</a></button></b><br>
-<button><b><a href = "/conductor-login">CONDUCTOR</a></b></button></b><br>
-<button><b><a href = "/admin-login">ADMIN</a></b></button></b><br>
+<div >
+<a class="btn btn-primary btn-lg btn-block" href="/login" role="button"  >USER</a><br>
+<a class="btn btn-primary btn-lg btn-block" href="/conductor-login" role="button">CONDUCTOR</a><br>
+<a class="btn btn-primary btn-lg btn-block" href="/admin-login" role="button">ADMIN</a><br>
+
+</div>
+
 
 {% endblock %}

@@ -1,5 +1,7 @@
-{% extends "base.html" %} {% block title %}User Login{% endblock %} {% block content
-%}
+{% extends "base.html" %} 
+{% block title %}User Login{% endblock %} 
+{% block content%}
+
 <form method="POST">
   <h3 align="center">User Login</h3>
   <div class="form-group">
@@ -26,5 +28,5 @@
   <button type="submit" class="btn btn-primary">Login</button>
 </form>
 <br>
-<button><a style="font-size: 20px;" href="/sign-up">SIGNUP</a></button>
+<a class="btn btn-primary btn-lg btn-block" href="/sign-up" role="button"  >Sign Up</a><br>
 {% endblock %}

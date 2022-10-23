@@ -3,21 +3,44 @@
 
 {% block content %}
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-toggle="collapse"
-      data-target="#navbar"
-    >
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbar">
-      <div class="navbar-nav">
-        <a class="nav-item nav-link" id="home" href="/conductor-home">Home</a>
-        <a class="nav-item nav-link" id="home" href="/conductor-home">Trip</a>
-        <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
-      </div>
-    </div>
-  </nav>
+
+
+<!-- DETAILS-->
+<div>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col" ><b>Particulars</b></th>
+      <th scope="col"><b>Details</b></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Name</th>
+      <td>{{user.name}}</td>
+    </tr>
+    <tr>
+      <th scope="row">Account Number</th>
+      <td>{{user.account_number}}</td>
+    </tr>
+    <tr>
+      <th scope="row">Phone Number</th>
+      <td>{{user.phone_number}}</td>
+    </tr>
+    <tr>
+      <th scope="row">Account Type</th>
+      <td>{{user.type}}</td>
+    </tr>
+    
+  </tbody>
+</table>
+</div>
+  Name : {{user.first_name}}
+  {% for conductor_detail  in user.conductors %}
+  {{conductor_detail.bus}}
+  {% endfor %}
+  <br>
+  {{data.bus}}
+  {{data.id}}
+  {{user.name}}
 {% endblock %}

@@ -3,40 +3,37 @@
 
 {% block content %}
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <button
-    class="navbar-toggler"
-    type="button"
-    data-toggle="collapse"
-    data-target="#navbar"
-  >
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbar">
-    <div class="navbar-nav">
-      <a class="nav-item nav-link" id="home" href="/user-home">Home</a>
-      <a class="nav-item nav-link" id="home" href="/user-enquire-route">Route Enquire</a>
-      <a class="nav-item nav-link" id="home" href="/user-travel-history">Tarvel History</a>
-      <a class="nav-item nav-link" id="home" href="/user-wallet">Wallet</a>
-      <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
-    </div>
+<hr>
+<div>
+  <h1>Balance <span class="badge badge-secondary">Rs.{{user.balance}}</span></h1>
+<hr>
+
+<form method="POST">
+  <h3 align="center">Scratch Card</h3>
+  <div class="form-group">
+    <label for="from">Card No</label>
+    <input
+      type="text"
+      class="form-control"
+      id="card_number"
+      name="card_number"
+      placeholder="Enter Card Number"
+    />
   </div>
-</nav>
+  <div class="form-group">
+    <label for="Security Hash">Security Hash</label>
+    <input
+      type="text"
+      class="form-control"
+      id="security_hash"
+      name="security_hash"
+      placeholder="Enter Security Hash"
+    />
+  </div>
+  <br />
+  <button type="submit" class="btn btn-primary">Recharge</button>
+</form>
+<hr>
 
-<div>
-Balance : 
-</div>
-
-<div>
-Add money
-</div>
-
-<div>
-xxx
-</div>
-
-<div>
-xxx
-</div>
-
+<h3 align="center">Recharge History</h3>
 {% endblock %}
