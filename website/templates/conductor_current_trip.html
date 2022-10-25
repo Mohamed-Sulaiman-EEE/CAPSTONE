@@ -59,26 +59,26 @@
                 placeholder="Enter Account Number"
             />
             </div>
+
+            <div class="form-group input-group-lg">
+            <label for="to">Choose Destination      :</label>
+            <select id="to" name="to" class="form-grp">
+                {%for stop in route.stops.split(",")%}
+                <option value={{stop}}>{{stop}}</option>
+                {%endfor%}
+                <option value={{route.end}}>{{route.end}}</option>
+            </select>
+            
             <div class="form-group">
-            <label for="to">To</label>
-            <input
-                type="text"
-                class="form-control"
-                id="to"
-                name="to"
-                placeholder="Enter Destination Stop"
-            />
-            <div class="form-group">
-                <label for="to">Number of Passengers</label>
-                <input
-                    type="text"
-                    class="form-control"
-                    id="no"
-                    name="no"
-                    placeholder="Enter no of Passengers"
-                />
+            <label for="no">Number of Passengers  :</label>
+            <select id="no" name="no" >
+                {%for i in range(1,10)%}
+                <option value={{i}}>{{i}}</option>
+                {%endfor%}
+                
+            </select>    
         </div>
-        <br />
+        <br>
         <button type="submit" class="btn btn-primary">Book</button>
     </form>
 
@@ -102,15 +102,16 @@
         <h1 align = "center">TRIP CONTROLS</h1>
         <div class="btn-group-vertical" role="group" aria-label="Vertical button group" >
         
-        <a class="btn  btn-primary  " href="/conductor-utility-end-trip/{{cd.current_trip_id}} " role="button"  > NEXT STOP  </a><br>
-        <button type = "button " class = "btn btn-secondary" onclick="getLocation(101)" >REFRESH GPS</button><br>
-        <a class="btn  btn-info " href="/conductor-utility-create-trip/{{route}} " role="button"  >EMERGENCY ALERT</a><br>
-        <a class="btn  btn-warning " href="/conductor-utility-end-trip/{{cd.current_trip_id}} " role="button"  >REPAIR ALERT</a><br>
+        <a class="btn  btn-primary  " href="/conductor-utility-next-stop/{{cd.current_trip_id}} " role="button"  > NEXT STOP  </a><br>
+        <button type = "button " class = "btn btn-secondary" onclick="refreshGPS()" >REFRESH GPS</button><br>
+        <a class="btn  btn-info " href="/conductor-utility-emergency-alert/{{route}} " role="button"  >EMERGENCY ALERT</a><br>
+        <a class="btn  btn-warning " href="/conductor-utility-repair-alert/{{cd.current_trip_id}} " role="button"  >REPAIR ALERT</a><br>
         <a class="btn  btn-danger " href="/conductor-utility-end-trip/{{cd.current_trip_id}} " role="button"  > END TRIP </a><br>
         
     </div>
 <br><hr>
 
+<a class="btn  btn-danger " href="/utility-view-map/{{cd.current_trip_id}} " role="button"  > VIEW ON MAP </a><br>
 
 
 </div>

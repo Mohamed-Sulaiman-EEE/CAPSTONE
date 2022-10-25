@@ -72,6 +72,13 @@ class Trip(db.Model,UserMixin):
     #tickets = db.relationship('Ticket')
     #conductor_details = db.relationship('Conductor_details')
 
+
+class Fare(db.Model):
+    id = db.Column(db.Integer , primary_key = True)
+    from_ = db.Column(db.String)
+    to = db.Column(db.String)
+    price = db.Column(db.Integer)
+    routes = db.Column(db.String)
 '''
 class Ticket(db.Model,UserMixin):
     ticket_id = db.Column(db.String(100))

@@ -3,10 +3,10 @@ from time import time
 from unicodedata import name
 from flask import Blueprint, render_template, request, flash, jsonify , redirect, url_for
 from flask_login import login_required, current_user
-from .models import  User , Conductor_details , Route, Scratch_card , Site_settings , Helpdesk_recharge, Trip 
+from .models import  User , Conductor_details , Route, Scratch_card , Site_settings , Helpdesk_recharge, Trip  , Fare
 from . import db
 import json , requests , random , datetime
-
+import webbrowser
 # END OF IMPORTS
 views = Blueprint('views', __name__)
 #....................................................................................
@@ -83,7 +83,48 @@ def conductor_current_trip ():
     if conductor_details.current_trip_id :
         trip = Trip.query.filter_by(trip_id= conductor_details.current_trip_id).first()
         route = Route.query.filter_by(route_id = trip.route_id ).first()
+
+
+        if request.method=="POST":
+            passenger_account_number = request.form.get('account_number')
+            destination_stop = request.form.get('to')
+            no = int(request.form.get('no'))
+            def generate_fare(route = route , trip = trip ):
+                data = route.start +"," + route.stops + "," + route.end
+                data = data.split(",")
+                curr_stop = trip.current_stop
+                curr_index = 0
+                dest_index = 0
+                for i in range(len(data)):
+                    if data[i] == curr_stop:
+                        curr_index = i
+                    if data[i] == destination_stop:
+                        dest_index = i
+                fare = 0
+                while curr_index != dest_index:
+                    next_stop = data[curr_index+1]
+                    sprint = Fare.query.filter_by(from_=curr_stop , to = next_stop).first()
+                    if sprint :
+                        fare = fare + sprint.price
+                        curr_index +=1
+                        curr_stop = data[curr_index]
+                flash(fare)
+                return fare
+
+            fare = generate_fare(route = route , trip = trip )
+            fare = fare*no
+            flash(fare)
+
+
         return render_template("conductor_current_trip.html" , user = current_user , cd=conductor_details ,trip = trip ,route=route)
+    
+    
+
+        
+
+        
+    
+    
     return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details)
 
 
@@ -155,16 +196,32 @@ def conductor_utility_end_trip(trip_id):
     return redirect(url_for('views.conductor_current_trip'))
 
 
-@views.route('/conductor-utility-refresh-gps', methods=['GET' , 'POST'])
+@views.route('/conductor-utility-refresh-gps', methods=['POST'])
 def conductor_utility_refresh_gps():
-    d = json.loads(request.data);
-    trip_id = d['trip_id']
-    lat = d['lat']
-    lon = d['lon']
-    flash("JS")
-    trip = Trip.query.filter_by(trip_id = trip_id).first()    
+    data = json.loads(request.data);
+    gps = data["gps"]    
+    cd = Conductor_details.query.filter_by(conductor_id = current_user.id).first()
+    trip_id = cd.current_trip_id
+    trip = Trip.query.filter_by(trip_id = trip_id).first()
+    trip.gps = gps
+    db.session.commit()
     return jsonify({})
 
+
+
+
+
+@views.route('/utility-view-map/<trip_id>', methods=['GET' , 'POST'])
+@login_required
+def utility_view_map(trip_id):
+    trip = Trip.query.filter_by(trip_id = trip_id).first()
+    gps = trip.gps
+    #base_url = "https://www.google.com/maps/@?api=1&map_action=map&cenetr=" //Without Pointer
+    base_url = "https://www.google.com/maps/search/?api=1&query=" # with Pointer
+    url = base_url +gps
+    webbrowser.open_new(url)
+    return redirect(url_for('views.conductor_current_trip'))
+    
 
 #...................................ADMI FUNCTIONS.................................................
 
@@ -247,23 +304,11 @@ def camera():
 
 
 
+
 @views.route('/test-js', methods=['POST'])
 def test_js():
     data = json.loads(request.data)
-    trip_id = data['trip_id']
-    #note = Note.query.get(noteId)
-    flash(trip_id)
-    print(trip_id)
-    #return redirect(url_for('views.conductor_current_trip'))
-    return jsonify({})
-
-
-@views.route('/test-gps', methods=['POST'])
-def test_gps():
-    data = json.loads(request.data)
-    pos = data['data']
-    flash(pos)
-    print(pos)
-    
+    gps = data["gps"]
+    flash(gps)
     return jsonify({})
 
