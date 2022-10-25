@@ -16,15 +16,18 @@ class User(db.Model, UserMixin):
     type = db.Column(db.String(1))
     account_number = db.Column(db.String(10))
     balance = db.Column(db.Integer)
-    conductors = db.relationship('Conductor_details')
     scratch_cards = db.relationship('Scratch_card')
     helpdesk_recharges = db.relationship('Helpdesk_recharge')
     trips = db.relationship('Trip')
+    #tickets = db.relationship('Ticket')
 
 
 class Conductor_details(db.Model, UserMixin):
-    conductor_id = db.Column(db.Integer , db.ForeignKey('user.id'),primary_key = True)
-    bus = db.Column(db.String(10))
+    conductor_id = db.Column(db.Integer , primary_key = True)
+    bus_no = db.Column(db.String(10))
+    current_trip_id = db.Column(db.Integer)
+    routes_assigned = db.Column(db.String(100))
+
 
 class Route(db.Model):
     route_id = db.Column(db.Text , primary_key = True)
@@ -53,7 +56,7 @@ class Helpdesk_recharge(db.Model,UserMixin):
 
 
 class Trip(db.Model,UserMixin):
-    trip_id = db.Column(db.Integer , primary_key = True)
+    trip_id = db.Column(db.String , primary_key = True)
     route_id = db.Column(db.String(100))
     conductor_id = db.Column(db.Integer , db.ForeignKey('user.id'))
     date = db.Column(db.String(100))
@@ -62,3 +65,25 @@ class Trip(db.Model,UserMixin):
     start_time =db.Column(db.String(100))
     end_time = db.Column(db.String(100))
     status =db.Column(db.String(1))
+    current_passengers= db.Column(db.Integer)
+    current_stop = db.Column(db.String)
+    bus_no = db.Column(db.String)
+    gps = db.Column(db.String)
+    #tickets = db.relationship('Ticket')
+    #conductor_details = db.relationship('Conductor_details')
+
+'''
+class Ticket(db.Model,UserMixin):
+    ticket_id = db.Column(db.String(100))
+    trip_id = db.Column(db.Integer , db.ForeignKey('trip.trip_id'))
+    conductor_id = db.Column(db.Integer , db.ForeignKey('user.id'))
+    passenger_account_number = conductor_id = db.Column(db.Integer , db.ForeignKey('user.account_number'))
+    boarding_stop = db.Column(db.String(100))
+    destination_stop = db.Column(db.String(100))
+    bus_no = db.Column(db.String(10))
+    fare = db.Column(db.Integer)
+    date = db.Column(db.String(100))
+    time = db.Column(db.String(100))
+    no_of_passengers = db.Column(db.Integer)
+
+'''

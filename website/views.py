@@ -1,8 +1,9 @@
 from multiprocessing.sharedctypes import Value
+from time import time
 from unicodedata import name
-from flask import Blueprint, render_template, request, flash, jsonify
+from flask import Blueprint, render_template, request, flash, jsonify , redirect, url_for
 from flask_login import login_required, current_user
-from .models import  User , Conductor_details , Route, Scratch_card , Site_settings , Helpdesk_recharge, Trip
+from .models import  User , Conductor_details , Route, Scratch_card , Site_settings , Helpdesk_recharge, Trip 
 from . import db
 import json , requests , random , datetime
 
@@ -47,7 +48,7 @@ def user_wallet():
         if card.status == "U":
             flash("Card has already been used !!!" , category="error")
             return render_template("user_wallet.html", user = current_user)
-        elif card.security_has != security_hash:
+        elif card.security_hash != security_hash:
             flash("Wrong security hash !!!",category="error")
         card.status = "U"
         card.user_id = current_user.id
@@ -61,33 +62,108 @@ def user_wallet():
     help = current_user.helpdesk_recharges
     return render_template("user_wallet.html" , user = current_user , history=history , help = help )
 
+
+
+
+
 #.................................CONDUCTOR FUNCTIONS .............................................
 
 @views.route('/conductor-home', methods=['GET', 'POST'])
 @login_required
 def conductor_home():
-    route = Route.query.all()
-    return render_template("conductor_home.html" , user = current_user,route=route)
+    conductor_details = Conductor_details.query.filter_by(conductor_id = current_user.id).first()
+    return render_template("conductor_home.html" , user = current_user,cd = conductor_details)
+
+
 
 @views.route('/conductor-current-trip', methods=['GET', 'POST'])
 @login_required
 def conductor_current_trip ():
-    return render_template("conductor_current_trip.html" , user = current_user)
+    conductor_details = Conductor_details.query.filter_by(conductor_id = current_user.id).first()
+    if conductor_details.current_trip_id :
+        trip = Trip.query.filter_by(trip_id= conductor_details.current_trip_id).first()
+        route = Route.query.filter_by(route_id = trip.route_id ).first()
+        return render_template("conductor_current_trip.html" , user = current_user , cd=conductor_details ,trip = trip ,route=route)
+    return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details)
+
+
 
 @views.route('/conductor-my-trips', methods=['GET', 'POST'])
 @login_required
 def conductor_my_trips():
     trips = Trip.query.filter_by(conductor_id = current_user.id).all()
-    return render_template("conductor_my_trips.html" , user = current_user , trips = trips )
+    conductor_details = Conductor_details.query.filter_by(conductor_id = current_user.id).first()
+    return render_template("conductor_my_trips.html" , user = current_user , trips = trips, cd= conductor_details )
 
-@views.route('/conductor-view-tickets/<trip_id>', methods=['GET', 'POST'])
+
+
+@views.route('/conductor-view-details/<trip_id>', methods=['GET', 'POST'])
 @login_required
-def conductor_view_tickets (trip_id):
-    flash(trip_id)
+def conductor_view_details (trip_id):
     trip = Trip.query.filter_by(trip_id=trip_id).first()
-    return render_template("conductor_view_tickets.html" , user = current_user, trip_id = trip_id, trip=trip )
+    route = Route.query.filter_by(route_id = trip.route_id ).first()
+    #tickets = trip.tickets
+    return render_template("conductor_view_details.html" , user = current_user, trip=trip, route=route )
 
 
+@views.route('/conductor-utility-create-trip/<route_id>', methods=['GET' , 'POST'])
+@login_required
+def conductor_utility_create_trip(route_id):
+    conductor_details = Conductor_details.query.filter_by(conductor_id = current_user.id).first()
+    if conductor_details.current_trip_id is not None:
+        flash("Complete the present trip !!!")
+        return render_template("conductor_home.html" , user = current_user,cd = conductor_details)
+    route = Route.query.filter_by(route_id = route_id).first()
+    date_time = datetime.datetime.now()
+    date = str(date_time.strftime('%x'))
+    start_time = str(date_time.strftime('%X'))
+    end_time="XX:XX:XX"
+    trip = Trip(route_id= route_id ,
+                conductor_id = current_user.id , 
+                collection = 0,
+                ticket_run =0,
+                status = "A",
+                current_passengers = 0,
+                current_stop = route.start,
+                date = date ,
+                start_time = start_time,
+                end_time = end_time ,
+                bus_no = conductor_details.bus_no,
+                gps = "LAT,LON")
+    db.session.add(trip)
+    db.session.commit()
+    conductor_details.current_trip_id = trip.trip_id
+    db.session.commit()
+    flash("Trip created succesfully ")
+    return redirect(url_for('views.conductor_current_trip'))
+    
+
+
+@views.route('/conductor-utility-end-trip/<trip_id>', methods=['GET' , 'POST'])
+@login_required
+def conductor_utility_end_trip(trip_id):
+    conductor_details = Conductor_details.query.filter_by(conductor_id = current_user.id).first()
+    if conductor_details.current_trip_id is not None:
+        conductor_details.current_trip_id = None
+        trip = Trip.query.filter_by(trip_id = trip_id).first()
+        trip.status ="I"
+        end_time = str(datetime.datetime.now().strftime("%X"))
+        trip.end_time = end_time
+        db.session.commit()
+        flash("Trip ended Successfully !!! ")
+        return render_template("conductor_home.html" , user = current_user,cd = conductor_details)
+    return redirect(url_for('views.conductor_current_trip'))
+
+
+@views.route('/conductor-utility-refresh-gps', methods=['GET' , 'POST'])
+def conductor_utility_refresh_gps():
+    d = json.loads(request.data);
+    trip_id = d['trip_id']
+    lat = d['lat']
+    lon = d['lon']
+    flash("JS")
+    trip = Trip.query.filter_by(trip_id = trip_id).first()    
+    return jsonify({})
 
 
 #...................................ADMI FUNCTIONS.................................................
@@ -157,3 +233,37 @@ def admin_wallet_recharge():
             flash("Cards generated successfully !!!")
     
     return render_template("admin_wallet_recharge.html" , user = current_user , scr = scr)
+
+
+
+
+@views.route('/camera', methods=['GET', 'POST'])
+def camera():
+    return render_template("camera.html" )
+
+
+
+
+
+
+
+@views.route('/test-js', methods=['POST'])
+def test_js():
+    data = json.loads(request.data)
+    trip_id = data['trip_id']
+    #note = Note.query.get(noteId)
+    flash(trip_id)
+    print(trip_id)
+    #return redirect(url_for('views.conductor_current_trip'))
+    return jsonify({})
+
+
+@views.route('/test-gps', methods=['POST'])
+def test_gps():
+    data = json.loads(request.data)
+    pos = data['data']
+    flash(pos)
+    print(pos)
+    
+    return jsonify({})
+

@@ -2,6 +2,126 @@
 {% block title %} Conductor Current Trip {% endblock %} 
 
 {% block content %}
+{%if trip%}
+<div>
+
+    <div>
+        <h1 align = "center">
+            Camera Stuffs
+        </h1>
+<div>
+        <form action="#" id="myform" enctype="multipart/form-data">
+            <label for="capture">Capture QR</label>
+        
+            <input type="file" 
+            id="capture" 
+            accept="image/*" 
+            capture 
+            />
+            <br/>
+        </form>
+        <br>
+        <hr>
+        {%if 1%}
+        <img class = "img-fluid img-thumbnail " src="" id="img" alt="from phone"/>
+        {%endif%}
+</div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', (ev)=>{
+                let form = document.getElementById('myform');
+                //get the captured media file
+                let input = document.getElementById('capture');
+                
+                input.addEventListener('change', (ev)=>{
+                    console.dir( input.files[0] );
+                    if(input.files[0].type.indexOf("image/") > -1){
+                        let img = document.getElementById('img');
+                        img.src = window.URL.createObjectURL(input.files[0]);
+                        console.log()
+                    }  
+                })
+            })
+        </script>
+    </div>
+
+<br><hr>
+
+    <form method="POST">
+        <h3 align="center">Book Ticket</h3>
+        <div class="form-group">
+            <label for="email">Account Number</label>
+            <input
+                type="text"
+                class="form-control"
+                id="account_number"
+                name="account_number"
+                placeholder="Enter Account Number"
+            />
+            </div>
+            <div class="form-group">
+            <label for="to">To</label>
+            <input
+                type="text"
+                class="form-control"
+                id="to"
+                name="to"
+                placeholder="Enter Destination Stop"
+            />
+            <div class="form-group">
+                <label for="to">Number of Passengers</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="no"
+                    name="no"
+                    placeholder="Enter no of Passengers"
+                />
+        </div>
+        <br />
+        <button type="submit" class="btn btn-primary">Book</button>
+    </form>
+
+
+    <div>
+        <h1 align = "center">Trip Details</h1>
+        <h4>Trip ID            :    <span class="badge bg-secondary btn-primary">{{trip.trip_id}}</span></h4>
+        <h4>Route ID           :    <span class="badge bg-secondary btn-primary">{{trip.route_id}}</span></h4>
+        <h4>Bus No             :    <span class="badge bg-secondary btn-primary">{{trip.bus_no}}</span></h4>
+        <h4>From               :    <span class="badge bg-secondary btn-primary">{{route.start}}</span></h4>
+        <h4>To                 :    <span class="badge bg-secondary btn-primary">{{route.end}}</span></h4>
+        <h4>Intermediate Stops :    <span class="badge bg-secondary btn-primary">{{route.stops}}</span></h4>
+        <h4>Collection         :    <span class="badge bg-secondary btn-primary">{{trip.collection}}</span></h4>
+        <h4>Ticket Run         :    <span class="badge bg-secondary btn-primary">{{trip.ticket_run}}</span></h4>
+        <h4>Current Passengers :    <span class="badge bg-secondary btn-primary">{{trip.current_passengers}}</span></h4>
+        <h4>Current Stop       :    <span class="badge bg-secondary btn-primary">{{trip.current_stop}}</span></h4>
+        <h4>GPS                :    <span class="badge bg-secondary btn-primary">{{trip.gps}}</span></h4>
+    </div>
+
+    <div align = "center"  >
+        <h1 align = "center">TRIP CONTROLS</h1>
+        <div class="btn-group-vertical" role="group" aria-label="Vertical button group" >
+        
+        <a class="btn  btn-primary  " href="/conductor-utility-end-trip/{{cd.current_trip_id}} " role="button"  > NEXT STOP  </a><br>
+        <button type = "button " class = "btn btn-secondary" onclick="getLocation(101)" >REFRESH GPS</button><br>
+        <a class="btn  btn-info " href="/conductor-utility-create-trip/{{route}} " role="button"  >EMERGENCY ALERT</a><br>
+        <a class="btn  btn-warning " href="/conductor-utility-end-trip/{{cd.current_trip_id}} " role="button"  >REPAIR ALERT</a><br>
+        <a class="btn  btn-danger " href="/conductor-utility-end-trip/{{cd.current_trip_id}} " role="button"  > END TRIP </a><br>
+        
+    </div>
+<br><hr>
+
+
+
+</div>
+{%endif%}
+
+{%if cd.current_trip_id == None%}
+<h1>No Current trip !!!</h1>
+{%endif%}
+
+
+
 
 
 
