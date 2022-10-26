@@ -63,10 +63,9 @@
             <div class="form-group input-group-lg">
             <label for="to">Choose Destination      :</label>
             <select id="to" name="to" class="form-grp">
-                {%for stop in route.stops.split(",")%}
+                {%for stop in display_stops%}
                 <option value={{stop}}>{{stop}}</option>
                 {%endfor%}
-                <option value={{route.end}}>{{route.end}}</option>
             </select>
             
             <div class="form-group">

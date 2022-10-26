@@ -30,12 +30,42 @@
 {%endif%}
 
 <br><hr>
-    <div>
-        <h1 align = "center">
-            Tickets Issued 
-        </h1>
-    </div>
 
+
+
+
+
+
+    <div>
+        <h1 align = "center">TICKETS ISSUED</h1>
+        <!-- DETAILS-->
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col" ><b>TICKET ID</b></th>
+            <th scope="col"><b>BOARDING STOP</b></th>
+            <th scope="col"><b>DESTINATION STOP</b></th>
+            <th scope="col"><b>NO OF PASSENGERS</b></th>
+            <th scope="col"><b>TIME</b></th>
+            <th scope="col"><b>FARE</b></th>
+          </tr>
+        </thead>
+          
+        <tbody>
+          {%for t in tickets %}
+          <tr>
+            <th>{{t.ticket_id}}</th>
+            <td>{{t.boarding_stop}}</td>
+            <td>{{t.destination_stop}}</td>
+            <td>{{t.no}}</td>
+            <td>{{t.time}}</td>
+            <td>{{t.fare}}</td>
+          </tr>
+          {%endfor%}
+        </tbody>
+      </table>
+  
+    </div>
 
 
 

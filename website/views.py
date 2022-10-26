@@ -3,10 +3,11 @@ from time import time
 from unicodedata import name
 from flask import Blueprint, render_template, request, flash, jsonify , redirect, url_for
 from flask_login import login_required, current_user
-from .models import  User , Conductor_details , Route, Scratch_card , Site_settings , Helpdesk_recharge, Trip  , Fare
+from .models import  Ticket, User , Conductor_details , Route, Scratch_card , Site_settings , Helpdesk_recharge, Trip  , Fare
 from . import db
 import json , requests , random , datetime
 import webbrowser
+from werkzeug.security import generate_password_hash, check_password_hash
 # END OF IMPORTS
 views = Blueprint('views', __name__)
 #....................................................................................
@@ -34,7 +35,8 @@ def user_enquire_route():
 @views.route('/user-travel-history', methods=['GET', 'POST'])
 @login_required
 def user_travel_history():
-    return render_template("user_travel_history.html" , user = current_user)
+    trips = Ticket.query.filter_by(passenger_account_number = current_user.account_number).all()
+    return render_template("user_travel_history.html" , user = current_user, trips = trips)
 
 
 
@@ -82,9 +84,14 @@ def conductor_current_trip ():
     conductor_details = Conductor_details.query.filter_by(conductor_id = current_user.id).first()
     if conductor_details.current_trip_id :
         trip = Trip.query.filter_by(trip_id= conductor_details.current_trip_id).first()
-        route = Route.query.filter_by(route_id = trip.route_id ).first()
-
-
+        route = Route.query.filter_by(route_id = trip.route_id ).first() 
+        # To display Only ahead stops
+        display_stops = route.start +"," +route.stops + "," + route.end 
+        display_stops = display_stops.split(",")
+        curr_stop = trip.current_stop
+        curr_index = display_stops.index(curr_stop)
+        display_stops = display_stops[curr_index+1:]
+        #ONLY AHEAD STOPS
         if request.method=="POST":
             passenger_account_number = request.form.get('account_number')
             destination_stop = request.form.get('to')
@@ -108,22 +115,45 @@ def conductor_current_trip ():
                         fare = fare + sprint.price
                         curr_index +=1
                         curr_stop = data[curr_index]
-                flash(fare)
                 return fare
 
             fare = generate_fare(route = route , trip = trip )
             fare = fare*no
-            flash(fare)
+
+            passenger = User.query.filter_by(account_number = passenger_account_number).first()
+            if passenger == None:
+                flash("User Not Found")
+                return redirect(url_for('views.conductor_current_trip'))
+            if passenger.balance < fare:
+                flash("Insufficinet Balance !!!")
+                return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details)
+            #Check balance properly 
+            trip.ticket_run = trip.ticket_run + 1
+            prefix_len = 9 - len(str(trip.trip_id))
+            postfix_len = 3- len(str(trip.ticket_run))
+            ticket_id = "T" + "0"*prefix_len + str(trip.trip_id)+ "0"*postfix_len + str(trip.ticket_run)
+
+            date_time = datetime.datetime.now()
+            date = str(date_time.strftime('%x'))
+            time = str(date_time.strftime('%X'))
 
 
-        return render_template("conductor_current_trip.html" , user = current_user , cd=conductor_details ,trip = trip ,route=route)
-    
-    
+            ticket = Ticket(ticket_id= ticket_id ,
+                            trip_id= trip.trip_id ,
+                            passenger_account_number = passenger_account_number,
+                            route = route.route_id,
+                            boarding_stop = trip.current_stop,
+                            destination_stop = destination_stop,
+                            no = no,
+                            fare = fare,
+                            date = date, 
+                            time = time)
 
-        
-
-        
-    
+            db.session.add(ticket)
+            trip.current_passengers = trip.current_passengers  + no
+            trip.collection = trip.collection + fare
+            db.session.commit()
+        return render_template("conductor_current_trip.html" , user = current_user , cd=conductor_details ,trip = trip ,route=route,display_stops = display_stops)
     
     return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details)
 
@@ -143,8 +173,8 @@ def conductor_my_trips():
 def conductor_view_details (trip_id):
     trip = Trip.query.filter_by(trip_id=trip_id).first()
     route = Route.query.filter_by(route_id = trip.route_id ).first()
-    #tickets = trip.tickets
-    return render_template("conductor_view_details.html" , user = current_user, trip=trip, route=route )
+    tickets = trip.tickets
+    return render_template("conductor_view_details.html" , user = current_user, trip=trip, route=route , tickets = tickets)
 
 
 @views.route('/conductor-utility-create-trip/<route_id>', methods=['GET' , 'POST'])
@@ -170,7 +200,7 @@ def conductor_utility_create_trip(route_id):
                 start_time = start_time,
                 end_time = end_time ,
                 bus_no = conductor_details.bus_no,
-                gps = "LAT,LON")
+                gps = "0,0")
     db.session.add(trip)
     db.session.commit()
     conductor_details.current_trip_id = trip.trip_id
@@ -178,6 +208,45 @@ def conductor_utility_create_trip(route_id):
     flash("Trip created succesfully ")
     return redirect(url_for('views.conductor_current_trip'))
     
+
+
+
+@views.route('/conductor-utility-next-stop/<trip_id>', methods=['GET' , 'POST'])
+@login_required
+def conductor_utility_next_stop(trip_id):
+    '''
+    Before next stop , 
+    1 >> Check if this is last stop
+    2 >> Reduce current passengers who get down at next stop whn reached 
+    '''
+
+    conductor_details = Conductor_details.query.filter_by(conductor_id = current_user.id).first()
+    if conductor_details.current_trip_id is not None:
+        trip = Trip.query.filter_by(trip_id = trip_id).first()
+        route = Route.query.filter_by(route_id=trip.route_id).first()
+        data = route.start +"," + route.stops + "," + route.end
+        data = data.split(",")
+        curr_index = data.index(trip.current_stop)
+        
+        if curr_index == len(data)-1 :
+            flash('Final Stop Reached!!!')
+            return redirect(url_for('views.conductor_current_trip'))
+        else:
+            trip.current_stop = data[curr_index+1]
+        #STOP UPDATED
+
+        #UPDATING CURRENT PASSENGERS
+        ticket = Ticket.query.filter_by(trip_id = trip.trip_id).all()
+        get_down_ppl = 0
+        for t in ticket:
+            if t.destination_stop == data[curr_index+1]:
+                get_down_ppl = get_down_ppl + t.no
+        trip.current_passengers = trip.current_passengers - get_down_ppl
+        db.session.commit()
+        flash("Geared UP !!!")
+        return redirect(url_for('views.conductor_current_trip'))
+    return redirect(url_for('views.conductor_current_trip'))
+
 
 
 @views.route('/conductor-utility-end-trip/<trip_id>', methods=['GET' , 'POST'])
@@ -190,10 +259,13 @@ def conductor_utility_end_trip(trip_id):
         trip.status ="I"
         end_time = str(datetime.datetime.now().strftime("%X"))
         trip.end_time = end_time
+        current_user.balance = current_user.balance +  trip.collection
         db.session.commit()
         flash("Trip ended Successfully !!! ")
         return render_template("conductor_home.html" , user = current_user,cd = conductor_details)
     return redirect(url_for('views.conductor_current_trip'))
+
+
 
 
 @views.route('/conductor-utility-refresh-gps', methods=['POST'])
@@ -206,8 +278,6 @@ def conductor_utility_refresh_gps():
     trip.gps = gps
     db.session.commit()
     return jsonify({})
-
-
 
 
 
@@ -246,6 +316,54 @@ def admin_manage_routes():
         flash("Route added successfully !!!")
     route = Route.query.all()
     return render_template("admin_manage_routes.html" , user = current_user , route=route)
+
+
+@views.route('/admin-manage-conductors', methods=['GET', 'POST'])
+@login_required
+def admin_manage_conductors():
+    if request.method == "POST":
+        email = request.form.get('email')
+        name = request.form.get('name')
+        phone_number = request.form.get('phone_number')
+        password1 = request.form.get('password1')
+        password2 = request.form.get('password2')
+        bus_no = request.form.get('bus_no')
+        routes_assigned = request.form.get('routes_assigned')
+        
+        conductor = User.query.filter_by(email=email).first()
+        if conductor:
+            flash('Email already exists.', category='error')
+        elif len(email) < 4:
+            flash('Email must be greater than 3 characters.', category='error')
+        elif len(name) < 2:
+            flash('First name must be greater than 1 character.', category='error')
+        elif password1 != password2:
+            flash('Passwords don\'t match.', category='error')
+        elif len(password1) < 2:
+            flash('Password must be at least 7 characters.', category='error')
+        else:
+            new_conductor = User(email=email, 
+                                name= name ,
+                                phone_number= phone_number ,  
+                                password=generate_password_hash(password1, method='sha256') , 
+                                balance = 0 , 
+                                type = "C" )
+            db.session.add(new_conductor)
+            db.session.commit()
+            cd = Conductor_details(conductor_id = new_conductor.id , 
+                                    bus_no = bus_no , 
+                                    routes_assigned = routes_assigned ,
+                                    current_trip_id = None
+                                     )
+            db.session.add(cd)
+            generate_account_details(new_conductor)
+            db.session.commit()
+            flash("Conductor added successfully !!!")
+            return redirect(url_for('views.admin_home'))
+
+    conductors = User.query.filter_by(type = "C").all()
+    cd = Conductor_details.query.all()
+    return render_template("admin_manage_conductors.html" , user = current_user ,conductors = conductors , cd = cd)
 
 
 @views.route('/admin-wallet-recharge', methods=['GET', 'POST'])
@@ -293,12 +411,31 @@ def admin_wallet_recharge():
 
 
 
+@views.route("/admin-utility-view-scratch-cards" , methods = ['GET','POST'] )
+@login_required
+def admin_utility_view_scratch_cards():
+    scratch_cards = Scratch_card.query.filter_by(status="N").all()
+    return render_template("admin_view_scratch_cards.html" , user= current_user , scratch_cards = scratch_cards)
+
+
 
 @views.route('/camera', methods=['GET', 'POST'])
 def camera():
     return render_template("camera.html" )
 
 
+
+
+
+
+def generate_account_details(current_user):
+    l = 5-len(str(current_user.id))
+    prefix = "0"*l + str(current_user.id)
+    no = "AAAAA" + prefix
+    current_user.account_number = no
+    current_user.type = "C"
+    db.session.commit()
+    
 
 
 
