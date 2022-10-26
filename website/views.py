@@ -27,9 +27,32 @@ def user_home():
 @views.route('/user-enquire-route', methods=['GET', 'POST'])
 @login_required
 def user_enquire_route():
-    
-    return render_template("user_enquire_route.html" , user = current_user )
+    if request.method =="POST":
+        boarding_stop = request.form.get('boarding_stop')
+        destination_stop = request.form.get("boarding_stop")
+        routes = Route.query.all()
+        possible_route_id = list()
+        for route in routes : 
+            data = route.start +"," +route.stops + "," + route.end
+            data = data.split(",")
+            l = len(data)
+            i = 0
+            board_index = dest_index = -1
+            while(i < l - 1):
+                if data[i] == boarding_stop:
+                    board_index = i
+                if data[i] == destination_stop:
+                    dest_index = i
+                i += 1
+            if board_index > dest_index or board_index == -1 or dest_index == -1:
+                break
+            else:
+                possible_route_id.append(route.route_id)
 
+        trips = Trip.query.filter_by(status = "A").all()
+        return render_template("user_enquire_route.html" , user = current_user , trips = trips , boarding_stop = boarding_stop , destination_stop = destination_stop,
+                                        possible_route_id = possible_route_id)
+    return render_template("user_enquire_route.html" , user = current_user )
 
 
 @views.route('/user-travel-history', methods=['GET', 'POST'])
