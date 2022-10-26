@@ -93,69 +93,87 @@ def conductor_current_trip ():
         display_stops = display_stops[curr_index+1:]
         #ONLY AHEAD STOPS
         if request.method=="POST":
+            flash("post request")
             passenger_account_number = request.form.get('account_number')
             destination_stop = request.form.get('to')
             no = int(request.form.get('no'))
-            def generate_fare(route = route , trip = trip ):
-                data = route.start +"," + route.stops + "," + route.end
-                data = data.split(",")
-                curr_stop = trip.current_stop
-                curr_index = 0
-                dest_index = 0
-                for i in range(len(data)):
-                    if data[i] == curr_stop:
-                        curr_index = i
-                    if data[i] == destination_stop:
-                        dest_index = i
-                fare = 0
-                while curr_index != dest_index:
-                    next_stop = data[curr_index+1]
-                    sprint = Fare.query.filter_by(from_=curr_stop , to = next_stop).first()
-                    if sprint :
-                        fare = fare + sprint.price
-                        curr_index +=1
-                        curr_stop = data[curr_index]
-                return fare
+            if passenger_account_number and destination_stop and no :
+                flash("gotcha")
+                if destination_stop == None:
+                    flash("No more Bookings !!!")
+                    return redirect(url_for('views.conductor_current_trip'))
 
-            fare = generate_fare(route = route , trip = trip )
-            fare = fare*no
+                def generate_fare(route = route , trip = trip , destination_stop = destination_stop ):
+                    data = route.start +"," + route.stops + "," + route.end
+                    data = data.split(",")
+                    curr_stop = trip.current_stop
+                    curr_index = 0
+                    dest_index = 0
+                    for i in range(len(data)):
+                        if data[i] == curr_stop:
+                            curr_index = i
+                        if data[i] == destination_stop:
+                            dest_index = i
+                    fare = 0
+                    while curr_index != dest_index:
+                        next_stop = data[curr_index+1]
+                        sprint = Fare.query.filter_by(from_=curr_stop , to = next_stop).first()
+                        if sprint :
+                            fare = fare + sprint.price
+                            curr_index +=1
+                            curr_stop = data[curr_index]
+                    return fare
 
-            passenger = User.query.filter_by(account_number = passenger_account_number).first()
-            if passenger == None:
-                flash("User Not Found")
-                return redirect(url_for('views.conductor_current_trip'))
-            if passenger.balance < fare:
-                flash("Insufficinet Balance !!!")
+                fare = generate_fare(route = route , trip = trip ,destination_stop=destination_stop )
+                fare = fare*no
+
+                passenger = User.query.filter_by(account_number = passenger_account_number).first()
+                if passenger == None:
+                    flash("User Not Found")
+                    #return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details,trip = trip ,route=route,display_stops = display_stops)
+                    return redirect(url_for('views.conductor_home'))
+                elif passenger.balance < fare:
+                    flash("Insufficinet Balance !!!")
+                    return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details,trip = trip ,route=route,display_stops = display_stops)
+                #Check balance properly
+                else: 
+                    trip.ticket_run = trip.ticket_run + 1
+                    prefix_len = 9 - len(str(trip.trip_id))
+                    postfix_len = 3- len(str(trip.ticket_run))
+                    ticket_id = "T" + "0"*prefix_len + str(trip.trip_id)+ "0"*postfix_len + str(trip.ticket_run)
+
+                    date_time = datetime.datetime.now()
+                    date = str(date_time.strftime('%x'))
+                    time = str(date_time.strftime('%X'))
+
+
+                    ticket = Ticket(ticket_id= ticket_id ,
+                                    trip_id= trip.trip_id ,
+                                    passenger_account_number = passenger_account_number,
+                                    route = route.route_id,
+                                    boarding_stop = trip.current_stop,
+                                    destination_stop = destination_stop,
+                                    no = no,
+                                    fare = fare,
+                                    date = date, 
+                                    time = time)
+
+                    db.session.add(ticket)
+                    trip.current_passengers = trip.current_passengers  + no
+                    trip.collection = trip.collection + fare
+                    passenger.balance = passenger.balance - fare
+                    current_user.balance = current_user.balance + fare
+                    db.session.commit()
+            else:
                 return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details)
-            #Check balance properly 
-            trip.ticket_run = trip.ticket_run + 1
-            prefix_len = 9 - len(str(trip.trip_id))
-            postfix_len = 3- len(str(trip.ticket_run))
-            ticket_id = "T" + "0"*prefix_len + str(trip.trip_id)+ "0"*postfix_len + str(trip.ticket_run)
-
-            date_time = datetime.datetime.now()
-            date = str(date_time.strftime('%x'))
-            time = str(date_time.strftime('%X'))
+        elif request.method=="GET":
+            flash("get reuqest")
+            return render_template("conductor_current_trip.html" , user = current_user , cd=conductor_details ,trip = trip ,route=route,display_stops = display_stops)
 
 
-            ticket = Ticket(ticket_id= ticket_id ,
-                            trip_id= trip.trip_id ,
-                            passenger_account_number = passenger_account_number,
-                            route = route.route_id,
-                            boarding_stop = trip.current_stop,
-                            destination_stop = destination_stop,
-                            no = no,
-                            fare = fare,
-                            date = date, 
-                            time = time)
 
-            db.session.add(ticket)
-            trip.current_passengers = trip.current_passengers  + no
-            trip.collection = trip.collection + fare
-            db.session.commit()
-        return render_template("conductor_current_trip.html" , user = current_user , cd=conductor_details ,trip = trip ,route=route,display_stops = display_stops)
-    
-    return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details)
+    else:
+        return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details)
 
 
 
@@ -277,6 +295,7 @@ def conductor_utility_refresh_gps():
     trip = Trip.query.filter_by(trip_id = trip_id).first()
     trip.gps = gps
     db.session.commit()
+    flash("Refreshed GPS")
     return jsonify({})
 
 
@@ -286,6 +305,7 @@ def conductor_utility_refresh_gps():
 def utility_view_map(trip_id):
     trip = Trip.query.filter_by(trip_id = trip_id).first()
     gps = trip.gps
+    flash(gps)
     #base_url = "https://www.google.com/maps/@?api=1&map_action=map&cenetr=" //Without Pointer
     base_url = "https://www.google.com/maps/search/?api=1&query=" # with Pointer
     url = base_url +gps

@@ -17,9 +17,11 @@ function test_js(trip_id , a)
 function refreshGPS() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(showPosition);
+    
   } else {
     x.innerHTML = "Geolocation is not supported by this browser.";
   }
+  
 }
 
 function showPosition(position) {
@@ -30,8 +32,23 @@ function showPosition(position) {
     body: JSON.stringify({ gps : gps }),
   }
   ).then((_res) => {
-    window.location.href = "/conductor-current-trip";
+    window.location.href = "/conductor-home";
   });;
 }
 
 //-------- REFRESH GPS-----------
+
+
+
+
+
+function newTab(gps){
+  let base_url = "https://www.google.com/maps/search/?api=1&query=";
+  let target_url = base_url +gps;
+  console.log(target_url);
+  alert(target_url);
+  alert(gps);
+  window.open(target_url, "_blank");
+}
+
+
