@@ -2,30 +2,34 @@
 {% block title %} Conductor Current Trip {% endblock %} 
 
 {% block content %}
-{%if trip%}
+{%if cd.current_trip_id %}
+<!--CAMERA-->
 <div>
 
     <div>
         <h1 align = "center">
             Camera Stuffs
         </h1>
-<div>
-        <form action="#" id="myform" enctype="multipart/form-data">
-            <label for="capture">Capture QR</label>
-        
-            <input type="file" 
-            id="capture" 
-            accept="image/*" 
-            capture 
-            />
-            <br/>
-        </form>
-        <br>
-        <hr>
-        {%if 1%}
-        <img class = "img-fluid img-thumbnail " src="" id="img" alt="from phone"/>
-        {%endif%}
-</div>
+    </div>
+
+    <div>
+            <form action="#" id="myform" enctype="multipart/form-data">
+                <label for="capture">Capture QR</label>
+            
+                <input type="file" 
+                id="capture" 
+                accept="image/*" 
+                capture 
+                />
+                <br/>
+            </form>
+            <br>
+            <hr>
+            {%if 1%}
+            <img class = "img-fluid img-thumbnail " src="" id="img" alt="from phone"/>
+            {%endif%}
+    
+    </div>
 
         <script>
             document.addEventListener('DOMContentLoaded', (ev)=>{
@@ -43,10 +47,11 @@
                 })
             })
         </script>
-    </div>
-
+</div>
+<!--END OF CAMERA-->
 <br><hr>
 
+<!--book ticket form-->
     <form method="POST">
         <h3 align="center">Book Ticket</h3>
         <div class="form-group">
@@ -78,10 +83,10 @@
             </select>    
         </div>
         <br>
-        <button type="submit" class="btn btn-primary">Book</button>
+        <button type="submit" class="btn btn-primary" onclick="refreshGPS()">Book</button>
     </form>
 
-
+<!--Trip details-->
     <div>
         <h1 align = "center">Trip Details</h1>
         <h4>Trip ID            :    <span class="badge bg-secondary btn-primary">{{trip.trip_id}}</span></h4>
@@ -97,15 +102,15 @@
         <h4>GPS                :    <span class="badge bg-secondary btn-primary">{{trip.gps}}</span></h4>
     </div>
 
+<!--TRIP CONTROLS-->
     <div align = "center"  >
         <h1 align = "center">TRIP CONTROLS</h1>
         <div class="btn-group-vertical" role="group" aria-label="Vertical button group" >
-        
-        <a class="btn  btn-primary  " href="/conductor-utility-next-stop/{{cd.current_trip_id}} " role="button"  > NEXT STOP  </a><br>
+        <a class="btn  btn-primary  " href="/conductor-utility-next-stop/{{cd.current_trip_id}} " role="button" onclick="refreshGPS()" > NEXT STOP  </a><br>
         <button type = "button " class = "btn btn-secondary" onclick="refreshGPS()" >REFRESH GPS</button><br>
         <a class="btn  btn-info " href="/conductor-utility-emergency-alert/{{route}} " role="button"  >EMERGENCY ALERT</a><br>
         <a class="btn  btn-warning " href="/conductor-utility-repair-alert/{{cd.current_trip_id}} " role="button"  >REPAIR ALERT</a><br>
-        <a class="btn  btn-danger " href="/conductor-utility-end-trip/{{cd.current_trip_id}} " role="button"  > END TRIP </a><br>
+        <a class="btn  btn-danger " href="/conductor-utility-end-trip/{{cd.current_trip_id}} " role="button" onclick="refreshGPS()"  > END TRIP </a><br>
         
     </div>
 <br><hr>
@@ -117,10 +122,11 @@
 <a class="btn  btn-danger " href="/utility-view-map/{{cd.current_trip_id}} " role="button"  > VIEW ON MAP : BACKEND </a><br>
 
 
-</div>
+    </div>
+
 {%endif%}
 
-{%if cd.current_trip_id == None%}
+{% if cd.current_trip_id == None %}
 <h1>No Current trip !!!</h1>
 {%endif%}
 

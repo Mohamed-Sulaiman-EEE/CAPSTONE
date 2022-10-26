@@ -91,17 +91,19 @@ def conductor_current_trip ():
         curr_stop = trip.current_stop
         curr_index = display_stops.index(curr_stop)
         display_stops = display_stops[curr_index+1:]
+        #flash("Loaded Args")
         #ONLY AHEAD STOPS
         if request.method=="POST":
-            flash("post request")
+            #flash("post request")
             passenger_account_number = request.form.get('account_number')
             destination_stop = request.form.get('to')
             no = int(request.form.get('no'))
             if passenger_account_number and destination_stop and no :
-                flash("gotcha")
+                #flash("gotcha")
                 if destination_stop == None:
                     flash("No more Bookings !!!")
-                    return redirect(url_for('views.conductor_current_trip'))
+                    #return redirect(url_for('views.conductor_current_trip'))
+                    return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details,trip = trip ,route=route,display_stops = display_stops)
 
                 def generate_fare(route = route , trip = trip , destination_stop = destination_stop ):
                     data = route.start +"," + route.stops + "," + route.end
@@ -128,15 +130,17 @@ def conductor_current_trip ():
                 fare = fare*no
 
                 passenger = User.query.filter_by(account_number = passenger_account_number).first()
+
                 if passenger == None:
                     flash("User Not Found")
-                    #return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details,trip = trip ,route=route,display_stops = display_stops)
-                    return redirect(url_for('views.conductor_home'))
+                    return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details,trip = trip ,route=route,display_stops = display_stops)
+                    #return redirect(url_for('views.conductor_home'))
                 elif passenger.balance < fare:
                     flash("Insufficinet Balance !!!")
                     return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details,trip = trip ,route=route,display_stops = display_stops)
                 #Check balance properly
                 else: 
+                    flash("Legit User")
                     trip.ticket_run = trip.ticket_run + 1
                     prefix_len = 9 - len(str(trip.trip_id))
                     postfix_len = 3- len(str(trip.ticket_run))
@@ -164,16 +168,15 @@ def conductor_current_trip ():
                     passenger.balance = passenger.balance - fare
                     current_user.balance = current_user.balance + fare
                     db.session.commit()
+                    flash("Booked Ticket Successfully !!!")
+            
             else:
-                return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details)
-        elif request.method=="GET":
-            flash("get reuqest")
-            return render_template("conductor_current_trip.html" , user = current_user , cd=conductor_details ,trip = trip ,route=route,display_stops = display_stops)
+                flash("Enter details fcker")
+        return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details,trip = trip ,route=route,display_stops = display_stops)
+
+    return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details)
 
 
-
-    else:
-        return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details)
 
 
 
@@ -218,7 +221,8 @@ def conductor_utility_create_trip(route_id):
                 start_time = start_time,
                 end_time = end_time ,
                 bus_no = conductor_details.bus_no,
-                gps = "0,0")
+                gps = "0,0",
+                gps_update_time = "00:00:00" )
     db.session.add(trip)
     db.session.commit()
     conductor_details.current_trip_id = trip.trip_id
@@ -293,7 +297,11 @@ def conductor_utility_refresh_gps():
     cd = Conductor_details.query.filter_by(conductor_id = current_user.id).first()
     trip_id = cd.current_trip_id
     trip = Trip.query.filter_by(trip_id = trip_id).first()
+    date_time = datetime.datetime.now()
+    date = str(date_time.strftime('%x'))
+    update_time = str(date_time.strftime('%X'))
     trip.gps = gps
+    trip.gps_update_time = update_time 
     db.session.commit()
     flash("Refreshed GPS")
     return jsonify({})
@@ -407,7 +415,6 @@ def admin_wallet_recharge():
             db.session.add(help)
             db.session.commit()
             passenger = user
-
             return render_template("admin_wallet_recharge.html" , user = current_user , scr = scr,passenger=passenger)
 
         if no and value :

@@ -32,8 +32,8 @@ function showPosition(position) {
     body: JSON.stringify({ gps : gps }),
   }
   ).then((_res) => {
-    window.location.href = "/conductor-home";
-  });;
+    window.location.href = "/conductor-current-trip";
+  });
 }
 
 //-------- REFRESH GPS-----------
