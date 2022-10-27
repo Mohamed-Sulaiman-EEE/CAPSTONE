@@ -15,6 +15,7 @@ function test_js(trip_id , a)
 
 //-------- REFRESH GPS-----------
 function refreshGPS() {
+  //alert("Refreshing GPS Auto!");
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(showPosition);
     
@@ -42,6 +43,8 @@ function showPosition(position) {
 
 
 
+
+
 function newTab(gps){
   let base_url = "https://www.google.com/maps/search/?api=1&query=";
   let target_url = base_url +gps;
@@ -50,5 +53,4 @@ function newTab(gps){
   alert(gps);
   window.open(target_url, "_blank");
 }
-
 

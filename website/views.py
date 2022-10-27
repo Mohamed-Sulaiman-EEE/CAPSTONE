@@ -15,6 +15,10 @@ views = Blueprint('views', __name__)
 def home():
     return render_template("home.html", user=current_user)
 
+@views.route('/about', methods=['GET', 'POST'])
+def about():
+    return render_template("about.html", user=current_user)
+
 #....................................................................................
 
 #.........................USER FUNCTIONS...........................................................
@@ -121,7 +125,7 @@ def conductor_current_trip ():
             passenger_account_number = request.form.get('account_number')
             destination_stop = request.form.get('to')
             no = int(request.form.get('no'))
-            if passenger_account_number and destination_stop and no :
+            if  destination_stop and no :
                 #flash("gotcha")
                 if destination_stop == None:
                     flash("No more Bookings !!!")
@@ -163,7 +167,7 @@ def conductor_current_trip ():
                     return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details,trip = trip ,route=route,display_stops = display_stops)
                 #Check balance properly
                 else: 
-                    flash("Legit User")
+                    #flash("Legit User")
                     trip.ticket_run = trip.ticket_run + 1
                     prefix_len = 9 - len(str(trip.trip_id))
                     postfix_len = 3- len(str(trip.ticket_run))
@@ -194,9 +198,11 @@ def conductor_current_trip ():
                     flash("Booked Ticket Successfully !!!")
             
             else:
-                flash("Enter details fcker")
+                flash("Enter details")
+                return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details,trip = trip ,route=route,display_stops = display_stops)
+        #flash("Hmm")
         return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details,trip = trip ,route=route,display_stops = display_stops)
-
+    flash("No Current Trips !!!")
     return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details)
 
 

@@ -112,18 +112,21 @@
         <a class="btn  btn-info " href="/conductor-utility-emergency-alert/{{route}} " role="button"  >EMERGENCY ALERT</a><br>
         <a class="btn  btn-warning " href="/conductor-utility-repair-alert/{{cd.current_trip_id}} " role="button"  >REPAIR ALERT</a><br>
         <a class="btn  btn-danger " href="/conductor-utility-end-trip/{{cd.current_trip_id}} " role="button" onclick="refreshGPS()"  > END TRIP </a><br>
-        
+        </div>
+        <br><hr>
+
+        <button type = "button " class = "btn btn-secondary" onclick="newTab({{trip.gps}})" >VIEW ON MAP : JS </button><br>
+
+
+        <br><hr><br>
+        <a class="btn  btn-danger " href="/utility-view-map/{{cd.current_trip_id}} " role="button"  > VIEW ON MAP : BACKEND </a><br>
+
+
     </div>
-<br><hr>
-
-<button type = "button " class = "btn btn-secondary" onclick="newTab({{trip.gps}})" >VIEW ON MAP : JS </button><br>
 
 
-<br><hr><br>
-<a class="btn  btn-danger " href="/utility-view-map/{{cd.current_trip_id}} " role="button"  > VIEW ON MAP : BACKEND </a><br>
 
 
-    </div>
 
 {%endif%}
 
@@ -134,6 +137,5 @@
 
 
 
-
-
 {% endblock %}
+
