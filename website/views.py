@@ -95,6 +95,14 @@ def user_wallet():
 
 
 
+@views.route('/utility-view-route-map/<route>', methods=['GET', 'POST'])
+@login_required
+def utility_view_route_map(route):
+    flash(route)
+    return render_template("view_route_map.html" ,user = current_user, route = route)
+
+
+
 #.................................CONDUCTOR FUNCTIONS .............................................
 
 @views.route('/conductor-home', methods=['GET', 'POST'])

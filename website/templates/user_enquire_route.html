@@ -34,7 +34,22 @@
 </div>
 
 
+
 {%if possible_route_id   %}
+<br><hr>
+
+  <div align = "center">
+    <h1 align = "center">View Map</h1>
+    <div class="btn-group" role="group" aria-label="Basic example"></div>
+    <a class="btn btn-primary btn-danger" href="/utility-view-route-map/00 " role="button"  >Madurai Map</a>
+    {%for route in possible_route_id %}
+    <a class="btn btn-primary btn-success " href="/utility-view-route-map/{{route}} " role="button"  > {{route}} </a>
+    {%endfor%}  
+    </div>
+  </div>
+<br><hr>
+
+
 <div>
   <h1 align = "center">Results</h1>
 </div>
