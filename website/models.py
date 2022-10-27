@@ -68,9 +68,11 @@ class Trip(db.Model,UserMixin):
     current_passengers= db.Column(db.Integer)
     current_stop = db.Column(db.String)
     bus_no = db.Column(db.String)
-    gps = db.Column(db.String)
+    gps = db.Column(db.String(100))
     gps_update_time = db.Column(db.String)
     tickets = db.relationship('Ticket')
+    lat = db.Column(db.String)
+    long = db.Column(db.String)
     #conductor_details = db.relationship('Conductor_details')
 
 

@@ -259,6 +259,8 @@ def conductor_utility_create_trip(route_id):
                 end_time = end_time ,
                 bus_no = conductor_details.bus_no,
                 gps = "0,0",
+                lat = "0",
+                long = "0",
                 gps_update_time = "00:00:00" )
     db.session.add(trip)
     db.session.commit()
@@ -331,6 +333,8 @@ def conductor_utility_end_trip(trip_id):
 def conductor_utility_refresh_gps():
     data = json.loads(request.data);
     gps = data["gps"]    
+    lat = data["lat"]
+    long = data["long"]
     cd = Conductor_details.query.filter_by(conductor_id = current_user.id).first()
     trip_id = cd.current_trip_id
     trip = Trip.query.filter_by(trip_id = trip_id).first()
@@ -338,9 +342,11 @@ def conductor_utility_refresh_gps():
     date = str(date_time.strftime('%x'))
     update_time = str(date_time.strftime('%X'))
     trip.gps = gps
+    trip.lat = lat
+    trip.long = long
     trip.gps_update_time = update_time 
     db.session.commit()
-    flash("Refreshed GPS")
+    #flash("Refreshed GPS")
     return jsonify({})
 
 

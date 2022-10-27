@@ -81,7 +81,7 @@
         <th>{{trip.current_passengers}}</th>
         <th>{{trip.gps}}</th>
         <th>{{trip.gps_update_time}}</th>
-        <th><button type = "button " class = "btn btn-secondary btn-success" onclick="newTab({{trip.gps}})" >MAP</button><br></th>
+        <th><button type = "button " class = "btn btn-secondary btn-success" onclick="newTab( {{ trip.lat }} , {{trip.long}} )" >MAP</button><br></th>
       </tr>
       {%endif%}
       {%endfor%}

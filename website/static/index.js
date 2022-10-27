@@ -27,10 +27,12 @@ function refreshGPS() {
 
 function showPosition(position) {
   let gps = position.coords.latitude +"," + position.coords.longitude;
+  let lat = position.coords.latitude;
+  let long = position.coords.longitude;
   fetch("/conductor-utility-refresh-gps", 
   {
     method: "POST",
-    body: JSON.stringify({ gps : gps }),
+    body: JSON.stringify({ gps : gps , lat :lat , long:  long }),
   }
   ).then((_res) => {
     window.location.href = "/conductor-current-trip";
@@ -45,12 +47,11 @@ function showPosition(position) {
 
 
 
-function newTab(gps){
+function newTab(lat , long){
   let base_url = "https://www.google.com/maps/search/?api=1&query=";
-  let target_url = base_url +gps;
+  let target_url = base_url + lat + "," + long;
   console.log(target_url);
-  alert(target_url);
-  alert(gps);
+  //alert(target_url);
   window.open(target_url, "_blank");
 }
 
