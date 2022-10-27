@@ -214,9 +214,6 @@ def conductor_current_trip ():
     return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details)
 
 
-
-
-
 @views.route('/conductor-my-trips', methods=['GET', 'POST'])
 @login_required
 def conductor_my_trips():
@@ -518,4 +515,17 @@ def test_js():
     gps = data["gps"]
     flash(gps)
     return jsonify({})
+
+
+
+
+@views.route("/load-image" ,  methods = ['POST'])
+def load_image():
+    data = json.loads(request.data)
+    img = data['data']
+    print(img)
+    #img.save("image.png")
+    #webbrowser.open_new(str(img))
+    return jsonify({})
+
 
