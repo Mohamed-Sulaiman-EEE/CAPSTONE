@@ -1,3 +1,4 @@
+from email import message
 from multiprocessing.sharedctypes import Value
 from time import time
 from unicodedata import name
@@ -8,6 +9,10 @@ from . import db
 import json , requests , random , datetime
 import webbrowser
 from werkzeug.security import generate_password_hash, check_password_hash
+
+from twilio.rest import Client
+ACCOUNT_SID = "AC7f9029cb62c986a4c38b0ef0bb395a27" 
+AUTH_TOKEN = "c725470ee485ad03159a00177b80f538" 
 # END OF IMPORTS
 views = Blueprint('views', __name__)
 #....................................................................................
@@ -202,6 +207,15 @@ def conductor_current_trip ():
                     trip.collection = trip.collection + fare
                     passenger.balance = passenger.balance - fare
                     current_user.balance = current_user.balance + fare
+                    phone = "+91" + passenger.phone_number
+                    def send_sms(phone, message):
+                        client = Client(ACCOUNT_SID, AUTH_TOKEN)
+                        message = client.messages.create(body= message, from_= "+18315766483",  to = phone )
+                        flash("SMS sent successfully ")
+
+                    current_stop = trip.current_stop
+                    message = "Ticket booked ! From :{0} , To : {1} , Fare : {2} , No : {3}  ".format(current_stop , destination_stop , fare , no )
+                    send_sms(phone = phone , message = message)
                     db.session.commit()
                     flash("Booked Ticket Successfully !!!")
             
@@ -527,5 +541,7 @@ def load_image():
     #img.save("image.png")
     #webbrowser.open_new(str(img))
     return jsonify({})
+
+
 
 
