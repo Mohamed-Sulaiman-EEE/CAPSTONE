@@ -12,7 +12,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(150), unique=True)
     password = db.Column(db.String(150))
     name = db.Column(db.String(150))
-    phone_number = db.Column(db.String(10))
+    phone_number = db.Column(db.String(15))
     type = db.Column(db.String(1))
     account_number = db.Column(db.String(10))
     balance = db.Column(db.Integer)
@@ -47,6 +47,7 @@ class Scratch_card(db.Model,UserMixin):
 class Site_settings(db.Model):
     id = db.Column(db.Integer , primary_key = True)
     scratch_card_run = db.Column(db.Integer)
+    auth = db.Column(db.String)
 
 class Helpdesk_recharge(db.Model,UserMixin):
     id = db.Column(db.Integer , primary_key = True)

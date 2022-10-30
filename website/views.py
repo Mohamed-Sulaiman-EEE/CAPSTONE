@@ -12,7 +12,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from twilio.rest import Client
 ACCOUNT_SID = "AC7f9029cb62c986a4c38b0ef0bb395a27" 
-AUTH_TOKEN = "c725470ee485ad03159a00177b80f538" 
+
 # END OF IMPORTS
 views = Blueprint('views', __name__)
 #....................................................................................
@@ -138,7 +138,11 @@ def conductor_current_trip ():
             passenger_account_number = request.form.get('account_number')
             destination_stop = request.form.get('to')
             no = int(request.form.get('no'))
-            if  destination_stop and no :
+            if destination_stop == None : 
+                flash("No more Bookings !!!")
+                #return redirect(url_for('views.conductor_current_trip'))
+                return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details,trip = trip ,route=route,display_stops = display_stops)
+            if  passenger_account_number and destination_stop and no :
                 #flash("gotcha")
                 if destination_stop == None:
                     flash("No more Bookings !!!")
@@ -207,21 +211,25 @@ def conductor_current_trip ():
                     trip.collection = trip.collection + fare
                     passenger.balance = passenger.balance - fare
                     current_user.balance = current_user.balance + fare
-                    phone = "+91" + passenger.phone_number
+                    ss = Site_settings.query.first()
+                    AUTH_TOKEN = ss.auth 
+                    P = passenger.phone_number
                     def send_sms(phone, message):
                         client = Client(ACCOUNT_SID, AUTH_TOKEN)
-                        message = client.messages.create(body= message, from_= "+18315766483",  to = phone )
-                        flash("SMS sent successfully ")
-
+                        print(phone)
+                        F = "+18315766483"
+                        P = phone
+                        message = client.messages.create(body= message, from_= F,  to = P )
                     current_stop = trip.current_stop
                     message = "Ticket booked ! From :{0} , To : {1} , Fare : {2} , No : {3}  ".format(current_stop , destination_stop , fare , no )
-                    send_sms(phone = phone , message = message)
+                    send_sms(phone = P , message = message)
                     db.session.commit()
                     flash("Booked Ticket Successfully !!!")
             
             else:
-                flash("Enter details")
-                return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details,trip = trip ,route=route,display_stops = display_stops)
+                #flash("Enter details")
+                return redirect(url_for('views.conductor_current_trip'))
+                #return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details,trip = trip ,route=route,display_stops = display_stops)
         #flash("Hmm")
         return render_template("conductor_current_trip.html" , user = current_user, cd = conductor_details,trip = trip ,route=route,display_stops = display_stops)
     flash("No Current Trips !!!")
@@ -357,7 +365,7 @@ def conductor_utility_refresh_gps():
     trip.long = long
     trip.gps_update_time = update_time 
     db.session.commit()
-    #flash("Refreshed GPS")
+    flash("Refreshed GPS")
     return jsonify({})
 
 
@@ -544,4 +552,6 @@ def load_image():
 
 
 
-
+@views.route("/utility-book-ticket" , methods = ["POST"])
+def book_ticket():
+    pass

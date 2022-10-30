@@ -55,3 +55,12 @@ function newTab(lat , long){
   window.open(target_url, "_blank");
 }
 
+
+
+function book_ticket(){
+  
+  let account_number = document.getElementById("account_number").value;
+  let destination = document.getElementById("to").value;
+  let no = document.getElementById("no").value;
+  console.log(account_number);
+}
